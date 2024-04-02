@@ -1,0 +1,33 @@
+version: '3.5'
+services:
+  wakeupbackend:
+    build: .
+    container_name: wakeupbackend
+    tty: true
+    volumes:
+      - /home/usr/wakeup/wakeup_backend:/app
+    restart: always
+    command: --bind 0.0.0.0:8000 --workers 3 --timeout 300 wakeup_backend.wsgi
+    depends_on:
+      - psql
+
+  web:
+    image: nginx:latest
+    container_name: nginx-web
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /home/usr/wakeup/nginx:/etc/nginx/conf.d
+      - /home/usr/wakeup/ssl:/app/ssl
+      - /home/usr/wakeup/wakeup_frontend/dist:/app/dist
+    restart: always
+
+  psql:
+    image: postgres:15-alpine
+    container_name: ksystem-psql
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - /home/usr/wakeup/wakeup_psql:/var/lib/postgresql/data
